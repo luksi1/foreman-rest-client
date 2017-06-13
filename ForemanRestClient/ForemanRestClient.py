@@ -107,10 +107,8 @@ class ForemanRestClient(RestClient.RestClient):
 
   def __get_environment_id_by_name(self, environment):
     prog = re.compile(re.escape(environment))
-    results = self.__get_results("environments")
     ids = []
-    
-    for r in results:
+    for r in self.__get_results("environments"):
       name = r['name']
       if prog.search(name):
          ids.append(r['id'])
@@ -121,22 +119,16 @@ class ForemanRestClient(RestClient.RestClient):
 
     return ids[0]
 
+  def get_hosts(self):
+    results = self.__get_results("hosts")
+    print(results)
+
+  def get_hostnames(self):
+    hosts = []
+    for r in self.__get_results("hosts"):
+      hosts.append(r['name'])
+    return hosts
+
   def bulk_delete_puppet_classes(self):
     for i in __get_puppet_class_ids():
       super().delete_data(self.base_url + "puppetclasses" + "/" + str(i))
-
-  def apply_hostgroup(self, hostname, hostgroup_name):
-    my_url = self.base_url + "hosts/" + str(self.__get_host_id_by_name(hostname))
-    print(my_url)
-    payload = {'host': {'hostgroup_id': self.__get_hostgroup_id_by_name(hostgroup_name) }}
-    print(payload)
-    text = super().put_data(my_url, payload)
-    print(text)
-
-  def new_hostgroup(self, parent, environment, hostgroup_name):
-    my_url = self.base_url + "/hostgroups"
-
-    payload = {'hostgroup': {'name': hostgroup_name, 'parent_id': self.__get_parent_id_by_name(parent), 'environment_id': self.__get_environment_id_by_name(environment)}}
-    print(payload)
-    text = super().post_data(my_url, payload)
-    print(text)
